@@ -55,7 +55,7 @@ class Card:
             TitleAlreadySetExeption: raised if title is already writen
         """
         if self.title:
-            raise TitleAlreadySetExeption()
+            raise TitleAlreadySetExeption('title already set')
         
         text_width, _ = self.draw.textsize(title, font=self.fonts_bold['title'])
         x_position = int(self.image_width-text_width)/2
@@ -68,7 +68,7 @@ class Card:
         self.title = title.replace(' ', '_')
 
     def choose_font(self, text: str, style: str, size: str) -> ImageFont:
-        """_summary_
+        """choose italic/bold and large/normal/medium and set limits
 
         Args:
             text (str): block of text
@@ -86,7 +86,7 @@ class Card:
         elif style == 'italic':
             font_dict = self.fonts_italic
         else:
-            raise UnknownFontStyleExeption()
+            raise UnknownFontStyleExeption(f'font style {style} does not exist')
         
         if len(text) > int(150*self.ratio) or size == 'small':
             characters = int(50*self.ratio)
@@ -121,7 +121,7 @@ class Card:
             self.y_position += self.line_height
 
             if self.y_position > self.image_height - self.space:
-                raise CharacterLimitExceededError()
+                raise CharacterLimitExceededError('text too long')
             
             self.draw.text((x_position, self.y_position),
                            line, fill =(0, 0, 0),
@@ -147,19 +147,23 @@ class Card:
     
 class CharacterLimitExceededError(Exception):
     "Raised when the input does not fit into the image."
-    pass
+    def __init__(self, message):
+        super().__init__(message)
 
 class TitleAlreadySetExeption(Exception):
     "Raised when trying to set title and title is already set."
-    pass
+    def __init__(self, message):
+        super().__init__(message)
 
 class UnknownFontStyleExeption(Exception):
     "Raised when used other keyword then 'bold' or 'italic'."
-    pass
+    def __init__(self, message):
+        super().__init__(message)
 
 class UnknownCardTypeException(Exception):
     "Raised when used other keyword then 'maze-cards' or 'magical-items'."
-    pass
+    def __init__(self, message):
+        super().__init__(message)
 
 def parse_path() -> Tuple[str]:
     """read path to file argument
@@ -203,7 +207,7 @@ def process_csv(csv_path: str, card_type: str) -> None:
     elif card_type == 'maze-cards':
         create_card = create_maze_card
     else:
-        raise UnknownCardTypeException()
+        raise UnknownCardTypeException(f'card type {card_type} does not exist')
 
     try:
         csv_file = open(csv_path)
