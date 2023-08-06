@@ -31,33 +31,19 @@ class Card:
         montserrat_path = os.path.join('fonts', 'montserrat.ttf')
         montserrat_italic_path = os.path.join('fonts', 'montserrat_italic.ttf')
 
-        self.font_title = ImageFont.truetype(montserrat_path, 40, encoding="unic")
-        self.font_title.get_variation_names()
-        self.font_title.set_variation_by_name('Bold')
+        text_sizes = {'title': 40, 'large': 30, 'normal': 25, 'small': 20}
+        self.fonts_bold = {}
+        self.fonts_italic = {}
 
-        self.font_bold_large = ImageFont.truetype(montserrat_path, 30, encoding="unic")
-        self.font_bold_large.get_variation_names()
-        self.font_bold_large.set_variation_by_name('Bold')
+        for key, value in text_sizes.items():
+            self.fonts_bold[key] = ImageFont.truetype(montserrat_path, value, encoding="unic")
+            self.fonts_bold[key].get_variation_names()
+            self.fonts_bold[key].set_variation_by_name('Bold')
 
-        self.font_bold = ImageFont.truetype(montserrat_path, 25, encoding="unic")
-        self.font_bold.get_variation_names()
-        self.font_bold.set_variation_by_name('Bold')
+            self.fonts_italic[key] = ImageFont.truetype(montserrat_italic_path, value, encoding="unic")
+            self.fonts_italic[key].get_variation_names()
+            self.fonts_italic[key].set_variation_by_name('Italic')
 
-        self.font_bold_small = ImageFont.truetype(montserrat_path, 20, encoding="unic")
-        self.font_bold_small.get_variation_names()
-        self.font_bold_small.set_variation_by_name('Bold')
-
-        self.font_italic_large = ImageFont.truetype(montserrat_italic_path, 30, encoding="unic")
-        self.font_italic_large.get_variation_names()
-        self.font_italic_large.set_variation_by_name('Italic')
-
-        self.font_italic = ImageFont.truetype(montserrat_italic_path, 25, encoding="unic")
-        self.font_italic.get_variation_names()
-        self.font_italic.set_variation_by_name('Italic')
-
-        self.font_italic_small = ImageFont.truetype(montserrat_italic_path, 20, encoding="unic")
-        self.font_italic_small.get_variation_names()
-        self.font_italic_small.set_variation_by_name('Italic')
 
     def add_title(self, title: str) -> None:
         """write title into card object
@@ -71,11 +57,11 @@ class Card:
         if self.title:
             raise TitleAlreadySetExeption()
         
-        text_width, _ = self.draw.textsize(title, font=self.font_title)
+        text_width, _ = self.draw.textsize(title, font=self.fonts_bold['title'])
         x_position = int(self.image_width-text_width)/2
         self.draw.text((x_position, self.y_position),
                         title, fill =(0, 0, 0),
-                        font=self.font_title)
+                        font=self.fonts_bold['title'])
         
         self.y_position += self.blank_line_height
         
@@ -95,30 +81,23 @@ class Card:
         Returns:
             ImageFont: chosen font
         """
+        if style == 'bold':
+            font_dict = self.fonts_bold
+        elif style == 'italic':
+            font_dict = self.fonts_italic
+        else:
+            raise UnknownFontStyleExeption()
+        
         if len(text) > int(150*self.ratio) or size == 'small':
             characters = int(50*self.ratio)
-            if style == 'bold':
-                font = self.font_bold_small
-            elif style == 'italic':
-                font = self.font_italic_small
-            else:
-                raise UnknownFontStyleExeption()
+            font = font_dict['small']
         elif len(text) > int(100*self.ratio) or size == 'normal':
             characters = int(40*self.ratio)
-            if style == 'bold':
-                font = self.font_bold
-            elif style == 'italic':
-                font = self.font_italic
-            else:
-                raise UnknownFontStyleExeption()
+            font = font_dict['normal']
         else:
             characters = int(30*self.ratio)
-            if style == 'bold':
-                font = self.font_bold_large
-            elif style == 'italic':
-                font = self.font_italic_large
-            else:
-                raise UnknownFontStyleExeption()
+            font = font_dict['normal']
+
             
         return font, characters
 
@@ -182,7 +161,7 @@ class UnknownCardTypeException(Exception):
     "Raised when used other keyword then 'maze-cards' or 'magical-items'."
     pass
 
-def parse_path() -> Tuple(str):
+def parse_path() -> Tuple[str]:
     """read path to file argument
 
     Returns:
